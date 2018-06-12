@@ -129,10 +129,11 @@ int translate (Tree** root)
         eng[k] = '\0';
         token = strtok (NULL, " ,.;");
     }
-    eng[k++] = '.';
-    eng[k] = '\0';
+    k = strlen (eng);
+    strcat (&eng[k], ".");
     strcpy (texto, eng);
     free (eng);
+    free (punct);
     return 1;
 }
 
