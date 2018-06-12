@@ -30,12 +30,19 @@ typedef struct tree
     struct tree *left, *right;
 } Tree;
 
+typedef short int SU;
+typedef struct delim
+{
+    char info;
+    SU pos;
+} Del;
+
 int treeFPush (Tree** root);
 Tree* treePush (Tree* root, char pt[], char en[]);
 Tree* treeSearch (Tree* root, char needle[]);
 void treeKeyPush (Tree** root, char pt[]);
 void treeOnFile (Tree** root);
-void translate (Tree** root);
+int translate (Tree** root);
 void treeWrite (Tree* root);
 Tree* treeFree (Tree* root);
 
@@ -45,7 +52,8 @@ Tree* treeFree (Tree* root);
 int fileCheck (void);
 void strToLower (char w[]);
 int strIsAlpha (char w[]);
-char* strPunct (void);
+Del* strPunct (void);
 int strCountPunct (char w[]);
+char tokenPunct (char* tok, Del* v, int* i);
 void* MALLOC (size_t tam);
 void clearScreen (void);

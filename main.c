@@ -24,7 +24,7 @@ int main (void)
                 puts ("Digite uma frase: ");
                 scanf ("%[^\n]", texto);
                 putchar ('\n');
-                translate (&root);
+                if (!translate (&root)) break;
                 printf ("A traducao é: %s\n", texto);
                 getchar (); CLRBUF;
                 break;
@@ -91,14 +91,24 @@ Tree* treeSearch (Tree* root, char needle[])
     }
 }
 
-void translate (Tree** root)
+int translate (Tree** root)
 {
     char* eng = (char*) MALLOC (strlen(texto)*2);
+    int k = 0;
     *eng = '\0';
-    char* punct = strPunct ();
+    Del* punct = strPunct ();
     char* token = strtok (texto, " ,.;");
+    if (!token)
+    {
+        clearScreen ();
+        fprintf (stderr, "Insira palavras validas!\n");
+        getchar (); CLRBUF;
+        return 0;
+    }
     while (token)
     {
+        int i=0;
+        char del;
         strToLower (token);
         Tree* search = treeSearch (*root, token);
         while (!search)
@@ -106,19 +116,24 @@ void translate (Tree** root)
             treeKeyPush (root, token);
             search = treeSearch (*root, token);
         }
-        int k = strlen (eng);
+        k = strlen (eng);
+        del = tokenPunct (token, punct, &i);
         if (k)
         {
-            eng[k++] = ' ';
+            eng[k++] = del;
             eng[k++] = '\0';
         }
         strcat (eng, search->en);
         k+= strlen (search->en);
+        if (del != ' ') eng[k++] = del;
         eng[k] = '\0';
         token = strtok (NULL, " ,.;");
     }
+    eng[k++] = '.';
+    eng[k] = '\0';
     strcpy (texto, eng);
     free (eng);
+    return 1;
 }
 
 void treeKeyPush (Tree** root, char pt[])
@@ -210,16 +225,23 @@ int strIsAlpha (char w[])
     return 1;
 }
 
-char* strPunct (void)
+Del* strPunct (void)
 {
     int i = strCountPunct (texto);
     if (i)
     {
-        char* pct = (char*) MALLOC (i);
+        Del* pct = (Del*) MALLOC (sizeof(Del)*i);
         int j;
         i = j = 0;
         while (texto[i])
-            if (ispunct(texto[i])) pct[j++] = i++;
+        {
+            if (ispunct (texto[i]))
+            {
+                pct[j].info = texto[i];
+                pct[j++].pos = i;
+            }
+            i++;
+        }
         return pct;
     }
     return NULL;
@@ -233,4 +255,14 @@ int strCountPunct (char w[])
         if (ispunct (w[i])) k++;
     }
     return k;
+}
+
+char tokenPunct (char* tok, Del* v, int* i)
+{
+    int len = strlen (tok);
+    if (len == v[*i].pos)
+    {
+        return v[(*i)++].info;
+    }
+    return ' ';
 }
