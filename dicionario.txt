@@ -1,0 +1,3 @@
+eu=i
+bonito=beautiful
+sou=am

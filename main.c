@@ -1,14 +1,14 @@
 #include "main.h"
 
 FILE* dict;
-char frase[500];
+char texto[1024];
 
 int main (void)
 {
-    Tree *root;
+    Tree *root = NULL;
     char op;
-    OPENFILE (dict, ARQ_DICT, "at");
-    treeFInsere (&root);
+    OPENFILE (dict, ARQ_DICT, "rt");
+    treeFPush (&root);
     puts ("\n\t\tTRADUTOR RUDIMENTAR DE PORTUGUES PARA INGLES\n");
     getchar ();
     while (1)
@@ -22,12 +22,15 @@ int main (void)
                 clearScreen ();
                 CLRBUF;
                 puts ("Digite uma frase: ");
-                scanf ("%[^\n]", frase);
+                scanf ("%[^\n]", texto);
                 putchar ('\n');
-                printf (translate(&root));
+                translate (&root);
+                printf ("A traducao é: %s\n", texto);
                 getchar (); CLRBUF;
                 break;
-            case 'e': return 0;
+            case 'e': 
+                treeOnFile (&root);
+                return 0;
             default: 
                 CLRBUF;
                 puts ("Opcao invalida.\n");
@@ -42,12 +45,17 @@ int treeFPush (Tree** root)
 {
     int i = 0;
     char pt[50], en[50];
-    while (!feof (dict))
+    if (fileCheck ())
     {
-        fscanf (dict, "%[^,],%[^\n]", pt, en);
-        if (*root == NULL) *root = treePush (*root, pt, en);
-        treePush (*root, pt, en);
-        i++;
+        while (!feof (dict))
+        {
+            if (fscanf (dict, "%[^=]=%[^\n]%*c", pt, en) > 0)
+            {
+                if (*root == NULL) *root = treePush (*root, pt, en);
+                else treePush (*root, pt, en);
+                i++;
+            }
+        }
     }
     return i;
 }
@@ -63,55 +71,108 @@ Tree* treePush (Tree* root, char pt[], char en[])
         root->right = NULL;
         return root;
     }
-    if (strcmp (root->pt, pt) > 0)
+    if (strcmp (pt, root->pt) < 0)
         root->left = treePush (root->left, pt, en);
-    else if (strcmp (root->pt, pt) < 0)
+    else if (strcmp (pt, root->pt) > 0)
         root->right = treePush (root->right, pt, en);
 }
 
-Tree* treeSearch (Tree* root, char pt[])
+Tree* treeSearch (Tree* root, char needle[])
 {
     if (!root) return NULL;
-    treeSearch (root->left, pt);
-    if (!strcmp(root->pt, pt)) return root;
-    treeSearch (root->right, pt);
-}
-
-char* translate (Tree** root)
-{
-    char* main = (char*) MALLOC (strlen(frase)*2);
-    *main = '\0';
-    char* token = strtok (frase, " ,.;");
-    while (token)
+    else
     {
-        Tree* search = treeSearch (*root, token);
-        if (!search)
-            treeKeyPush(root, token);
+        if (! strcmp (needle, root->pt)) return root;
         else
         {
-            int k = strlen (main);
-            if (k)
-            {
-                main[k++] = ' ';
-                main[k++] = '\0';
-            }
-            strcat (main, search->en);
-            k+= strlen (search->en);
-            main[k] = '\0';
+            if (strcmp (needle, root->pt) < 0) return treeSearch (root->left, needle);
+            else return treeSearch (root->right, needle);
         }
+    }
+}
+
+void translate (Tree** root)
+{
+    char* eng = (char*) MALLOC (strlen(texto)*2);
+    *eng = '\0';
+    char* punct = strPunct ();
+    char* token = strtok (texto, " ,.;");
+    while (token)
+    {
+        strToLower (token);
+        Tree* search = treeSearch (*root, token);
+        while (!search)
+        {
+            treeKeyPush (root, token);
+            search = treeSearch (*root, token);
+        }
+        int k = strlen (eng);
+        if (k)
+        {
+            eng[k++] = ' ';
+            eng[k++] = '\0';
+        }
+        strcat (eng, search->en);
+        k+= strlen (search->en);
+        eng[k] = '\0';
         token = strtok (NULL, " ,.;");
     }
-    strcpy (frase, main);
-    free (main);
+    strcpy (texto, eng);
+    free (eng);
 }
 
 void treeKeyPush (Tree** root, char pt[])
 {
     char handle[50];
-    puts ("Palavra nao encontrada no dicionario, por favor, insira sua traducao: ");
+    printf ("Palavra:   %s   nao encontrada no dicionario, por favor, insira sua traducao: ", pt);
+    CLRBUF;
     scanf ("%[^\n]", handle);
+    clearScreen ();
     if (!(*root)) *root = treePush (*root, pt, handle);
-    treePush (*root, pt, handle);
+    else treePush (*root, pt, handle);
+}
+
+void treeOnFile (Tree** root)
+{
+    if (freopen (ARQ_DICT, "wt", dict))
+    {
+        treeWrite (*root);
+        *root = treeFree (*root);
+    }
+    else
+    {
+        fprintf (stderr, "Erro na reabertura do arquivo %s\n", ARQ_DICT);
+        exit (1608);
+    }
+}
+
+void treeWrite (Tree* root)
+{
+    if (!root) return;
+    fprintf (dict, "%s=%s\n", root->pt, root->en);
+    treeWrite (root->left);
+    treeWrite (root->right);
+}
+
+Tree* treeFree (Tree* root)
+{
+    if (!root) return NULL;
+    treeFree (root->left);
+    treeFree (root->right);
+    free (root);
+}
+
+int fileCheck (void)
+{
+    int i = 0;
+    char ch = fgetc (dict);
+    while (ch != EOF)
+    {
+        if (ch == '\n') i++;
+        ch = fgetc (dict);
+    }
+    rewind (dict);
+    return i;
 }
 
 void* MALLOC (size_t tam)
@@ -130,4 +191,46 @@ void clearScreen (void)
     int n;
     for (n = 0; n < 10; n++)
       printf ("\n\n\n\n\n\n\n\n\n\n");
+}
+
+void strToLower (char w[])
+{
+    int i;
+    for (i=0; w[i]; i++)
+        if (isalpha(w[i]))
+            if (isupper (w[i]))
+                w[i] = tolower (w[i]);
+}
+
+int strIsAlpha (char w[])
+{
+    int i;
+    for (i=0; w[i]; i++)
+        if (!isalpha(w[i])) return 0;
+    return 1;
+}
+
+char* strPunct (void)
+{
+    int i = strCountPunct (texto);
+    if (i)
+    {
+        char* pct = (char*) MALLOC (i);
+        int j;
+        i = j = 0;
+        while (texto[i])
+            if (ispunct(texto[i])) pct[j++] = i++;
+        return pct;
+    }
+    return NULL;
+}
+
+int strCountPunct (char w[])
+{
+    int i, k = 0;
+    for (i=0; w[i]; i++)
+    {
+        if (ispunct (w[i])) k++;
+    }
+    return k;
 }

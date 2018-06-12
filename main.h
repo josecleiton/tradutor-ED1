@@ -4,7 +4,7 @@
 #include <ctype.h>
 #define ERRO exit (314159)
 
-#define ARQ_DICT "lib/dicionario.txt"
+#define ARQ_DICT "dicionario.txt"
 
 /*
 **  ABERTURA DE ARQUIVO
@@ -32,9 +32,20 @@ typedef struct tree
 
 int treeFPush (Tree** root);
 Tree* treePush (Tree* root, char pt[], char en[]);
-char* translate (Tree** root);
+Tree* treeSearch (Tree* root, char needle[]);
+void treeKeyPush (Tree** root, char pt[]);
+void treeOnFile (Tree** root);
+void translate (Tree** root);
+void treeWrite (Tree* root);
+Tree* treeFree (Tree* root);
 
-
-
+/*
+**  FUNÇÕES AUXILIARES
+*/
+int fileCheck (void);
+void strToLower (char w[]);
+int strIsAlpha (char w[]);
+char* strPunct (void);
+int strCountPunct (char w[]);
 void* MALLOC (size_t tam);
 void clearScreen (void);
