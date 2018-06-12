@@ -37,7 +37,6 @@ int main (void)
                 getchar (); CLRBUF;
         }
     }
-
     return 0;
 }
 
@@ -71,10 +70,8 @@ Tree* treePush (Tree* root, char pt[], char en[])
         root->right = NULL;
         return root;
     }
-    if (strcmp (pt, root->pt) < 0)
-        root->left = treePush (root->left, pt, en);
-    else if (strcmp (pt, root->pt) > 0)
-        root->right = treePush (root->right, pt, en);
+    if (strcmp (pt, root->pt) < 0) root->left = treePush (root->left, pt, en);
+    else if (strcmp (pt, root->pt) > 0) root->right = treePush (root->right, pt, en);
 }
 
 Tree* treeSearch (Tree* root, char needle[])
@@ -252,9 +249,7 @@ int strCountPunct (char w[])
 {
     int i, k = 0;
     for (i=0; w[i]; i++)
-    {
         if (ispunct (w[i])) k++;
-    }
     return k;
 }
 
@@ -262,8 +257,6 @@ char tokenPunct (char* tok, Del* v, int* i)
 {
     int len = strlen (tok);
     if (len == v[*i].pos)
-    {
         return v[(*i)++].info;
-    }
     return ' ';
 }
