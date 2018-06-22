@@ -1,3 +1,4 @@
+#define INCLUDES
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +6,7 @@
 #define ERRO exit (314159)
 
 #define ARQ_DICT "dicionario.txt"
+#define INPUT "entrada.txt"
 
 /*
 **  ABERTURA DE ARQUIVO
@@ -30,7 +32,20 @@ typedef struct tree
     struct tree *left, *right;
 } Tree;
 
+typedef struct treeprint
+{
+    Tree* info;
+    struct qprint *prox;
+} TreePrint;
+
+typedef struct queuePnt
+{
+    char info;
+    struct queuePnt *prox;
+} QPnt;
+
 typedef short int SU;
+typedef unsigned char BOOL;
 typedef struct delim
 {
     char info;
@@ -40,15 +55,19 @@ typedef struct delim
 int treeFPush (Tree** root);
 Tree* treePush (Tree* root, char pt[], char en[]);
 Tree* treeSearch (Tree* root, char needle[]);
-void treeKeyPush (Tree** root, char pt[]);
+Tree* treeKeyPush (Tree** root, char pt[]);
 void treeOnFile (Tree** root);
 int translate (Tree** root);
 void treeWrite (Tree* root);
 Tree* treeFree (Tree* root);
-
+void treePrintLetter (Tree* root, char del);
+void treeChange (Tree** root);
+int max (int a, int b);
+static int treeHeight (Tree* root);
 /*
 **  FUNÇÕES AUXILIARES
 */
+void fileTranslate (void);
 int fileCheck (void);
 void strToLower (char w[]);
 int strIsAlpha (char w[]);
@@ -57,3 +76,8 @@ int strCountPunct (char w[]);
 char tokenPunct (char* tok, Del* v, int* i);
 void* MALLOC (size_t tam);
 void clearScreen (void);
+
+int transl (Tree** root);
+int pega_token (QPnt** queue);
+QPnt* QPntPush (QPnt* queue, char info);
+char catDel (QPnt** q);
