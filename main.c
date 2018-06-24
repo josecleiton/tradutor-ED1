@@ -160,19 +160,35 @@ int translate (Tree** root, char** ftxt)
     int count=0;
     Tree* search = NULL;
     *ftxt = texto;
+    BOOL upper = 0;
+    char handle[50] = {'\0'};
     while (pega_token(&pnt))
     {
         count++;
-        search = treeSearch(*root, token);
-        if(!search) search = treeKeyPush(root, token);
-        strcat(eng, search->en);
-        char del[2];
-        BOOL fl=0;
-        for(*del = catDel(&pnt); *del != ' '; *del=catDel(&pnt), fl=1){
-            strcat(eng, del);
-            if((*del!='\n' && *del!='\r') || (*del=='-' && tk==DEL)) strcat(eng, " ");
+        if(tk==WORD)
+        {
+            if(isupper(*token)) upper = 1;
+            strToLower (token);
+            search = treeSearch(*root, token);
+            if(!search) search = treeKeyPush(root, token);
+            strcpy (handle, search->en);
+            if(upper) *(handle) = toupper (*(handle));
+            upper = 0;
+            strcat(eng, handle);
+            char del[2];
+            BOOL fl = 0;
+            for(*del = catDel(&pnt); *del != ' '; *del=catDel(&pnt), fl=1){
+                strcat(eng, del);
+                if((*del!='\n' && *del!='\r') || (*del=='-' && tk==DEL)) strcat(eng, " ");
+            }
+            if(!fl) strcat(eng, " ");
         }
-        if(!fl) strcat(eng, " ");
+        else if(tk==DEL)
+        {
+            *token = catDel(&pnt);
+            strcat(eng, token);
+            strcat(eng, " ");
+        }
         
 
     }
@@ -190,7 +206,6 @@ int pega_token (QPnt** queue)
     while(*texto == ' ') texto++;
     if(*texto == '\0') return tk;
     isw = (isalpha(*texto)) ? 1 : 0;
-    register char c;
     register int k=0, i=0;
     while(isalpha(texto[k]) && isw)
     {
@@ -201,7 +216,7 @@ int pega_token (QPnt** queue)
     i=k;
     if(((ispunct(texto[k]) || texto[k]=='\n' || texto[k] =='\r' )&& texto[k]!='-') || (texto[k]=='-' && !isw))
     {
-        tk=DEL;
+        if(k==1)tk=DEL;
         while(ispunct(texto[k]) || texto[k]=='\n' || texto[k] =='\r')
         {
             QPnt* aux = QPntPush(*queue, texto[k++]);
@@ -386,7 +401,7 @@ void treePrint (Tree* root)
         return;
     }
     TreePrint* q = NULL;
-    int t = 0, rd = 0;
+    int t = 0;
     for(q = printPush(q, root); q; q = printPop(q))
     {
         if(q->info->left) printPush (q, q->info->left);

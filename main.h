@@ -6,7 +6,7 @@
 #define ERRO exit (314159)
 
 #define ARQ_DICT "dicionario.txt"
-#define INPUT "test.txt"
+#define INPUT "entrada.txt"
 
 /*
 **  ABERTURA DE ARQUIVO
