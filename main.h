@@ -6,7 +6,7 @@
 #define ERRO exit (314159)
 
 #define ARQ_DICT "dicionario.txt"
-#define INPUT "entrada.txt"
+#define INPUT "test.txt"
 
 /*
 **  ABERTURA DE ARQUIVO
@@ -20,10 +20,10 @@
 }
 
 /*
-**  CLRBUF
-**  limpeza do buffer de entrada
+**  PAUSE
+**  limpeza do buffer de entrada e pause universal (independe do sistema)
 */
-#define CLRBUF scanf ("%*c")
+#define PAUSE scanf ("%*c")
 
 typedef struct tree
 {
@@ -35,7 +35,7 @@ typedef struct tree
 typedef struct treeprint
 {
     Tree* info;
-    struct qprint *prox;
+    struct treeprint *prox;
 } TreePrint;
 
 typedef struct queuePnt
@@ -46,38 +46,33 @@ typedef struct queuePnt
 
 typedef short int SU;
 typedef unsigned char BOOL;
-typedef struct delim
-{
-    char info;
-    SU pos;
-} Del;
 
 int treeFPush (Tree** root);
 Tree* treePush (Tree* root, char pt[], char en[]);
 Tree* treeSearch (Tree* root, char needle[]);
 Tree* treeKeyPush (Tree** root, char pt[]);
 void treeOnFile (Tree** root);
-int translate (Tree** root);
+int translate (Tree** root, char** h);
+int pega_token (QPnt** queue);
+QPnt* QPntPush (QPnt* queue, char info);
+char catDel (QPnt** q);
 void treeWrite (Tree* root);
 Tree* treeFree (Tree* root);
 void treePrintLetter (Tree* root, char del);
 void treeChange (Tree** root);
-int max (int a, int b);
-static int treeHeight (Tree* root);
+void treePrint (Tree* root);
+TreePrint* printPush (TreePrint* q, Tree* info);
+TreePrint* printPop (TreePrint* q);
+
 /*
 **  FUNÇÕES AUXILIARES
 */
 void fileTranslate (void);
 int fileCheck (void);
+int max (int a, int b);
+int treeHeight (Tree* root);
+int treeDistance (Tree* root, char key[]);
 void strToLower (char w[]);
 int strIsAlpha (char w[]);
-Del* strPunct (void);
-int strCountPunct (char w[]);
-char tokenPunct (char* tok, Del* v, int* i);
 void* MALLOC (size_t tam);
 void clearScreen (void);
-
-int transl (Tree** root);
-int pega_token (QPnt** queue);
-QPnt* QPntPush (QPnt* queue, char info);
-char catDel (QPnt** q);

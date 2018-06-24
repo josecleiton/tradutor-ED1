@@ -1,3 +1,14 @@
 eu=I
 bonito=beautiful
+a=the
+cavalos=horses
+correndo=running
 sou=am
+filho=son
+oi=hi
+o=the
+goku=goku
+garota=girl
+na=in the
+mata=jungle
+oito=eight
