@@ -3,10 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #define ERRO exit (314159)
 
 #define ARQ_DICT "dicionario.txt"
 #define INPUT "entrada.txt"
+
+#define TAM 50
 
 /*
 **  ABERTURA DE ARQUIVO
@@ -45,7 +48,6 @@ typedef struct queuePnt
 } QPnt;
 
 typedef short int SU;
-typedef unsigned char BOOL;
 
 int treeFPush (Tree** root);
 Tree* treePush (Tree* root, char pt[], char en[]);

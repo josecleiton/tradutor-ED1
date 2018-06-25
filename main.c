@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #endif
+
 
 /*
 PROBLEMA DE BUF APARENTEMENTE RESOLVIDO
@@ -13,7 +15,7 @@ PROBLEMA DE BUF APARENTEMENTE RESOLVIDO
 FILE* dict;
 char* texto;
 char tk;
-char token[50];
+char token[TAM];
 char op;
 
 enum tokens
@@ -40,13 +42,13 @@ int main (void)
             case 'a':
                 clearScreen();
                 fileTranslate();
-                printf ("A ser traduzido:\n%s\n", texto);
+                printf ("A ser traduzido:\n%s\n\n\n", texto);
                 if (!translate (&root, &ftxt))
                 {
-                    puts ("Nao ha o que traduzir!");
+                    fprintf (stderr, "Nao ha o que traduzir!\n");
                     break;
                 }
-                printf ("A traducao é: \n%s\n", texto);
+                printf ("A traducao é: \n\n%s\n", texto);
                 PAUSE;
                 break;
             case 't':
@@ -55,13 +57,13 @@ int main (void)
                 puts ("Digite uma frase: ");
                 scanf ("%[^\n]", texto);
                 clearScreen();
-                printf ("A ser traduzido:\n%s\n", texto);
+                printf ("A ser traduzido:\n\n%s\n\n\n", texto);
                 if (!translate (&root, &ftxt))
                 {
-                    puts ("Insira um texto valido!");
+                    fprintf (stderr, "Insira um texto valido!\n");
                     break;
                 }
-                printf ("A traducao é: %s\n", texto);
+                printf ("A traducao é: \n\n%s\n", texto);
                 PAUSE;
                 break;
             case 'm':
@@ -98,7 +100,7 @@ int main (void)
 int treeFPush (Tree** root)
 {
     int i = 0;
-    char pt[50], en[50];
+    char pt[TAM], en[TAM];
     if (fileCheck ())
     {
         while (!feof (dict))
@@ -160,23 +162,23 @@ int translate (Tree** root, char** ftxt)
     int count=0;
     Tree* search = NULL;
     *ftxt = texto;
-    BOOL upper = 0;
-    char handle[50] = {'\0'};
+    bool upper = false;
+    char handle[TAM] = {'\0'};
     while (pega_token(&pnt))
     {
         count++;
         if(tk==WORD)
         {
-            if(isupper(*token)) upper = 1;
+            if(isupper(*token)) upper = true;
             strToLower (token);
             search = treeSearch(*root, token);
             if(!search) search = treeKeyPush(root, token);
             strcpy (handle, search->en);
             if(upper) *(handle) = toupper (*(handle));
-            upper = 0;
+            upper = false;
             strcat(eng, handle);
             char del[2];
-            BOOL fl = 0;
+            bool fl = false;
             for(*del = catDel(&pnt); *del != ' '; *del=catDel(&pnt), fl=1){
                 strcat(eng, del);
                 if((*del!='\n' && *del!='\r') || (*del=='-' && tk==DEL)) strcat(eng, " ");
@@ -201,22 +203,23 @@ int translate (Tree** root, char** ftxt)
 int pega_token (QPnt** queue)
 {
     tk=0;
-    BOOL isw = 0;
+    memset(token, 0, TAM);
+    bool isw = false;
     if(*texto == '\0') return tk;
     while(*texto == ' ') texto++;
     if(*texto == '\0') return tk;
-    isw = (isalpha(*texto)) ? 1 : 0;
+    isw = (isalpha(*texto)) ? true : false;
     register int k=0, i=0;
     while(isalpha(texto[k]) && isw)
     {
         k++;
-        isw=1;
+        isw=true;
     }
     tk=WORD;
     i=k;
     if(((ispunct(texto[k]) || texto[k]=='\n' || texto[k] =='\r' )&& texto[k]!='-') || (texto[k]=='-' && !isw))
     {
-        if(k==1)tk=DEL;
+        if(k==1 || ispunct(*texto))tk=DEL;
         while(ispunct(texto[k]) || texto[k]=='\n' || texto[k] =='\r')
         {
             QPnt* aux = QPntPush(*queue, texto[k++]);
@@ -224,9 +227,9 @@ int pega_token (QPnt** queue)
         }
     }
     texto[i] = '\0';
-    int flag = (i==k) ? 1:0;
+    bool flag = (i==k) ? true:false;
     strcpy(token, texto);
-    while(k){
+    while((k && isw) || (!isalpha(*texto) && !isw)){
         texto++;
         k--;
     }
@@ -260,7 +263,7 @@ char catDel (QPnt** q)
 
 Tree* treeKeyPush (Tree** root, char pt[])
 {
-    char handle[50];
+    char handle[TAM];
     Tree* aux = NULL;
     printf ("Palavra:   %s   nao encontrada no dicionario, por favor, insira sua traducao: ", pt);
     if(op=='t') PAUSE;
@@ -317,7 +320,7 @@ void treePrintLetter (Tree* root, char del)
 
 void treeChange (Tree** root)
 {
-    char w[50];
+    char w[TAM];
     Tree* s = NULL;
     puts ("Mudar a traducao de qual palavra?");
     scanf ("%[^\n]%*c", w);
@@ -330,7 +333,7 @@ void treeChange (Tree** root)
     }
     else
     {
-        char w2[50] = {'\0'};
+        char w2[TAM] = {'\0'};
         printf ("Palavra nao encontrada!\nInsira a traducao de %s: ", w);
         while(*w2=='\0')
         {
