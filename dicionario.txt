@@ -52,6 +52,7 @@ presidente=president
 pediram=asked
 para=for
 pagara=will pay
+pai=father
 pois=because
 por=by
 que=what
