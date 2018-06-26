@@ -69,6 +69,7 @@ int max (int a, int b);
 int treeHeight (Tree* root);
 int treeDistance (Tree* root, char key[]);
 void strToLower (char w[]);
-int strIsAlpha (char w[]);
+bool strIsAlpha (char w[]);
+bool strIsTxt (char* txt);
 void* MALLOC (size_t tam);
 void clearScreen (void);

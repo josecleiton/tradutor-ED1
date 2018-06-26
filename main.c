@@ -148,7 +148,7 @@ Tree* treeSearch (Tree* root, char needle[])
 int aux_transl (Tree** root, char** txt)
 {
     char* texto = *txt;
-    if(!texto || *texto == '\0') return 0; // senão houver texto retorne falso
+    if(!texto || *texto == '\0' || !strIsTxt(texto)) return 0; // senão houver texto retorne falso
     size_t len = strlen(texto);
     char* en = (char*) MALLOC (len*2+1);
     *en = '\0';
@@ -203,8 +203,19 @@ Tree* treeKeyPush (Tree** root, char pt[])
 {
     char handle[TAM];
     Tree* aux = NULL;
-    printf ("Palavra:   %s   nao encontrada no dicionario, por favor, insira sua traducao: ", pt);
-    scanf ("%[^\n]%*c", handle);
+    bool flag = false;
+    do{
+        clearScreen();
+        if(flag)
+        {
+            fprintf(stderr, "Insira uma palavra valida!\n");
+            PAUSE;
+            clearScreen();
+        }
+        printf ("Palavra:   %s   nao encontrada no dicionario, por favor, insira sua traducao: ", pt);
+        scanf ("%[^\n]%*c", handle);
+        flag = true;
+    }while(!strIsAlpha(handle));
     clearScreen ();
     aux = treePush (*root, pt, handle);
     if (*root==NULL)
@@ -417,10 +428,17 @@ void strToLower (char w[])
                 w[i] = tolower (w[i]);
 }
 
-int strIsAlpha (char w[])
+bool strIsAlpha (char w[])
 {
     int i;
     for (i=0; w[i]; i++)
-        if (!isalpha(w[i])) return 0;
-    return 1;
+        if (!isalpha(w[i])) return false;
+    return true;
+}
+
+bool strIsTxt (char* txt){
+    int i;
+    for(i=0; txt[i]; i++)
+        if(isdigit(txt[i])) return false;
+    return true;
 }
