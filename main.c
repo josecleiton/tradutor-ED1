@@ -217,6 +217,7 @@ Tree* treeKeyPush (Tree** root, char pt[])
         flag = true;
     }while(!strIsAlpha(handle));
     clearScreen ();
+    strToLower(handle);
     aux = treePush (*root, pt, handle);
     if (*root==NULL)
     {
