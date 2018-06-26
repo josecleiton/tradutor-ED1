@@ -13,21 +13,13 @@ PROBLEMA DE BUF APARENTEMENTE RESOLVIDO
 */
 
 FILE* dict;
-char* texto;
-char tk;
-char token[TAM];
-char op;
-
-enum tokens
-{
-    WORD=1, DEL
-};
 
 int main (void)
 {
     Tree *root = NULL;
-    char* ftxt;
-    ftxt = texto = NULL;
+    char* texto = NULL;
+    char op;
+    int count;
     OPENFILE (dict, ARQ_DICT, "rt");
     treeFPush (&root);
     puts ("\n\t\tTRADUTOR RUDIMENTAR DE PORTUGUES PARA INGLES\n");
@@ -35,35 +27,22 @@ int main (void)
     while (1)
     {
         clearScreen ();
-        puts ("MENU:\n a= Traduzir texto do arquivo\n t= Traduzir frase do teclado\n c= Mudar a traducao de uma palavra\n m= Mostre palavras iniciada por determinada letra\n p= Print Tree\n e= Sair\n\nopcao = ");
+        puts ("MENU:\n a= Traduzir texto do arquivo\n t= Traduzir frase do teclado\n c= Mudar a traducao de uma palavra\n m= Mostre palavras iniciada por determinada letra\n p= Print Tree\n h= Mostra arvore por altura\n e= Sair\n\nopcao = ");
         scanf ("%c%*c", &op);
         switch (op)
         {
             case 'a':
                 clearScreen();
-                fileTranslate();
-                printf ("A ser traduzido:\n%s\n\n\n", texto);
-                if (!translate (&root, &ftxt))
-                {
-                    fprintf (stderr, "Nao ha o que traduzir!\n");
-                    break;
-                }
-                printf ("A traducao é: \n\n%s\n", texto);
+                fileTranslate(&texto);
+                count = mainOutput(&root, &texto);
                 PAUSE;
                 break;
             case 't':
                 clearScreen ();
                 if (!texto) texto = (char*) MALLOC (2048);
                 puts ("Digite uma frase: ");
-                scanf ("%[^\n]", texto);
-                clearScreen();
-                printf ("A ser traduzido:\n\n%s\n\n\n", texto);
-                if (!translate (&root, &ftxt))
-                {
-                    fprintf (stderr, "Insira um texto valido!\n");
-                    break;
-                }
-                printf ("A traducao é: \n\n%s\n", texto);
+                scanf ("%[^\n]%*c", texto);
+                count = mainOutput(&root, &texto);
                 PAUSE;
                 break;
             case 'm':
@@ -74,6 +53,12 @@ int main (void)
                 PAUSE;
                 break;
             case 'p':
+                clearScreen();
+                puts("Arvore em memoria: ");
+                treePrintO(root);
+                PAUSE;
+                break;
+            case 'h':
                 clearScreen ();
                 printf ("Arvore de altura %d em memoria:\n<pt> | <en>\n\n", treeHeight(root));
                 treePrint(root);
@@ -87,7 +72,7 @@ int main (void)
                 break;
             case 'e': 
                 treeOnFile (&root);
-                free (ftxt);
+                free (texto);
                 return 0;
             default: 
                 puts ("Opcao invalida.\n");
@@ -95,6 +80,21 @@ int main (void)
         }
     }
     return 0;
+}
+
+int mainOutput (Tree** root, char** txt)
+{
+    int count;
+    clearScreen();
+    printf ("A ser traduzido:\n\n%s\n\n\n", *txt);
+    count = aux_transl (root, txt);
+    if (!count)
+    {
+        fprintf (stderr, "Insira um texto valido!\n");
+        return 0;
+    }
+    printf ("A traducao é: \n\n%s\n\n\tNumero de palavras traduzidas: %d!\n\n", *txt, count);
+    return count;
 }
 
 int treeFPush (Tree** root)
@@ -145,129 +145,65 @@ Tree* treeSearch (Tree* root, char needle[])
     }
 }
 
-int translate (Tree** root, char** ftxt)
+int aux_transl (Tree** root, char** txt)
 {
-    int k;
-    for(k=0; texto[k]; k++)
+    char* texto = *txt;
+    if(!texto || *texto == '\0') return 0; // senão houver texto retorne falso
+    size_t len = strlen(texto);
+    char* en = (char*) MALLOC (len*2+1);
+    *en = '\0';
+    char token[TAM];
+    int i = 0; //cursor da string em pt
+    int j; //cursor do token
+    int k = 0; //conta as palavras traduzidas
+    bool punct;
+    while (texto[i])
     {
-        if(isdigit(texto[k]))
-            return 0;
+        j = 0;
+        punct = false;
+        while (texto[i] && isalpha(texto[i])) token[j++] = texto[i++];
+        token[j] = '\0';
+        len = strlen (token);
+        if(!len)
+        {
+            token[j++] = texto[i++];
+            token[j] = '\0';
+            punct = true;
+        }
+        else
+        {
+            transl(root, token);
+            strcat(en, token);
+            k++;
+        }
+        if(punct) strcat(en, token);
+        *token = '\0';
     }
-    k=0;
-    QPnt* pnt = NULL;
-    tk=0;
-    size_t txtLen = strlen(texto);
-    char* eng = (char*) MALLOC (txtLen+100);
-    *eng = '\0'; 
-    int count=0;
+    strcpy(texto, en);
+    free(en);
+    return k;
+}
+
+void transl (Tree** root, char tk[])
+{
+    size_t len = strlen (tk);
+    if(!len) return;
     Tree* search = NULL;
-    *ftxt = texto;
     bool upper = false;
-    char handle[TAM] = {'\0'};
-    while (pega_token(&pnt))
-    {
-        count++;
-        if(tk==WORD)
-        {
-            if(isupper(*token)) upper = true;
-            strToLower (token);
-            search = treeSearch(*root, token);
-            if(!search) search = treeKeyPush(root, token);
-            strcpy (handle, search->en);
-            if(upper) *(handle) = toupper (*(handle));
-            upper = false;
-            strcat(eng, handle);
-            char del[2];
-            bool fl = false;
-            for(*del = catDel(&pnt); *del != ' '; *del=catDel(&pnt), fl=1){
-                strcat(eng, del);
-                if((*del!='\n' && *del!='\r') || (*del=='-' && tk==DEL)) strcat(eng, " ");
-            }
-            if(!fl) strcat(eng, " ");
-        }
-        else if(tk==DEL)
-        {
-            *token = catDel(&pnt);
-            strcat(eng, token);
-            strcat(eng, " ");
-        }
-        
-
-    }
-    texto = *ftxt;
-    if(count) strcpy (texto, eng);
-    free(eng);
-    return count;
+    if(isupper(*tk)) upper = true;
+    strToLower(tk);
+    search = treeSearch (*root, tk);
+    if(!search) search = treeKeyPush (root, tk);
+    strcpy(tk, search->en);
+    if(upper) *tk = toupper(*tk);
 }
 
-int pega_token (QPnt** queue)
-{
-    tk=0;
-    memset(token, 0, TAM);
-    bool isw = false;
-    if(*texto == '\0') return tk;
-    while(*texto == ' ') texto++;
-    if(*texto == '\0') return tk;
-    isw = (isalpha(*texto)) ? true : false;
-    register int k=0, i=0;
-    while(isalpha(texto[k]) && isw)
-    {
-        k++;
-        isw=true;
-    }
-    tk=WORD;
-    i=k;
-    if(((ispunct(texto[k]) || texto[k]=='\n' || texto[k] =='\r' )&& texto[k]!='-') || (texto[k]=='-' && !isw))
-    {
-        if(k==1 || ispunct(*texto))tk=DEL;
-        while(ispunct(texto[k]) || texto[k]=='\n' || texto[k] =='\r')
-        {
-            QPnt* aux = QPntPush(*queue, texto[k++]);
-            if(*queue==NULL) *queue = aux;
-        }
-    }
-    texto[i] = '\0';
-    bool flag = (i==k) ? true:false;
-    strcpy(token, texto);
-    while((k && isw) || (!isalpha(*texto) && !isw)){
-        texto++;
-        k--;
-    }
-    if (flag) *texto = ' ';
-    return tk;
-}
-
-QPnt* QPntPush (QPnt* queue, char info)
-{
-    if(!queue)
-    {
-        queue = (QPnt*) MALLOC(sizeof(QPnt));
-        queue->info = info;
-        queue->prox = NULL;
-        return queue;
-    }
-    queue->prox = QPntPush(queue->prox, info);
-}
-
-char catDel (QPnt** q)
-{
-    QPnt* aux=*q;
-    if(!aux) return ' ';
-    char ch = aux->info;
-    QPnt* rem = aux;
-    aux=aux->prox;
-    free(rem);
-    *q=aux;
-    return ch; 
-}
 
 Tree* treeKeyPush (Tree** root, char pt[])
 {
     char handle[TAM];
     Tree* aux = NULL;
     printf ("Palavra:   %s   nao encontrada no dicionario, por favor, insira sua traducao: ", pt);
-    if(op=='t') PAUSE;
-    op='b';
     scanf ("%[^\n]%*c", handle);
     clearScreen ();
     aux = treePush (*root, pt, handle);
@@ -310,6 +246,16 @@ Tree* treeFree (Tree* root)
     free (root);
 }
 
+void treePrintO (Tree* root)
+{
+    if(root)
+    {
+        treePrintO(root->left);
+        printf("[%s=%s]\n", root->pt, root->en);
+        treePrintO(root->right);
+    }
+}
+
 void treePrintLetter (Tree* root, char del)
 {
     if (!root) return;
@@ -350,16 +296,16 @@ void treeChange (Tree** root)
     }
 }
 
-void fileTranslate (void)
+void fileTranslate (char** texto)
 {
     FILE* in = NULL;
     OPENFILE (in, INPUT, "r");
     fseek(in, 0, SEEK_END);
     long fSize = ftell (in);
     rewind(in);
-    if(!texto) texto = MALLOC (fSize+1);
-    fread (texto, fSize, 1, in);
-    texto[fSize] = '\0';
+    if(!(*texto)) *texto = MALLOC (fSize+1);
+    fread (*texto, fSize, 1, in);
+    (*texto)[fSize] = '\0';
     fclose(in);
 }
 

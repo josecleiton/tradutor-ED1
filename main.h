@@ -41,27 +41,21 @@ typedef struct treeprint
     struct treeprint *prox;
 } TreePrint;
 
-typedef struct queuePnt
-{
-    char info;
-    struct queuePnt *prox;
-} QPnt;
-
 typedef short int SU;
 
+int mainOutput (Tree** root, char** txt);
 int treeFPush (Tree** root);
 Tree* treePush (Tree* root, char pt[], char en[]);
 Tree* treeSearch (Tree* root, char needle[]);
 Tree* treeKeyPush (Tree** root, char pt[]);
 void treeOnFile (Tree** root);
-int translate (Tree** root, char** h);
-int pega_token (QPnt** queue);
-QPnt* QPntPush (QPnt* queue, char info);
-char catDel (QPnt** q);
+int aux_transl (Tree** root, char** txt);
+void transl (Tree** root, char tk[]);
 void treeWrite (Tree* root);
 Tree* treeFree (Tree* root);
 void treePrintLetter (Tree* root, char del);
 void treeChange (Tree** root);
+void treePrintO (Tree* root);
 void treePrint (Tree* root);
 TreePrint* printPush (TreePrint* q, Tree* info);
 TreePrint* printPop (TreePrint* q);
@@ -69,7 +63,7 @@ TreePrint* printPop (TreePrint* q);
 /*
 **  FUNÇÕES AUXILIARES
 */
-void fileTranslate (void);
+void fileTranslate (char** texto);
 int fileCheck (void);
 int max (int a, int b);
 int treeHeight (Tree* root);
