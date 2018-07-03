@@ -59,6 +59,8 @@ void treePrintO (Tree* root);
 void treePrint (Tree* root);
 TreePrint* printPush (TreePrint* q, Tree* info);
 TreePrint* printPop (TreePrint* q);
+int countNode (Tree* root);
+int countLeaf (Tree* root);
 
 /*
 **  FUNÇÕES AUXILIARES

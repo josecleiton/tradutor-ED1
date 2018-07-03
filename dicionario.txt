@@ -62,3 +62,4 @@ seguranca=security
 sera=will be
 todos=all
 voces=you
+veneno=poison

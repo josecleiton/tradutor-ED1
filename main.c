@@ -22,6 +22,7 @@ int main (void)
     int count;
     OPENFILE (dict, ARQ_DICT, "rt");
     treeFPush (&root);
+    //printf("NOS = %d\nFOLHAS = %d\n", countNode(root), countLeaf(root));
     puts ("\n\t\tTRADUTOR RUDIMENTAR DE PORTUGUES PARA INGLES\n");
     PAUSE;
     while (1)
@@ -442,4 +443,17 @@ bool strIsTxt (char* txt){
     for(i=0; txt[i]; i++)
         if(isdigit(txt[i])) return false;
     return true;
+}
+
+int countNode (Tree* root){
+    if(!root) return 0;
+    return countNode(root->left)+countNode(root->right)+1;
+}
+
+int countLeaf (Tree* root){
+    if(!root) return 0;
+    if(root->left == NULL && root->right == NULL) return 1;
+    else
+        return countLeaf(root->left)+countLeaf(root->right);
+
 }
