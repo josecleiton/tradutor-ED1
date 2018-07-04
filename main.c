@@ -18,6 +18,7 @@ int main (void)
 {
     Tree *root = NULL;
     char* texto = NULL;
+    char handle[TAM] = {'\0'};
     char op;
     int count;
     OPENFILE (dict, ARQ_DICT, "rt");
@@ -59,6 +60,14 @@ int main (void)
                 treePrintO(root);
                 PAUSE;
                 break;
+            case 'r':
+                clearScreen();
+                puts("Digite a palavra para retirar: ");
+                scanf("%[^\n]%*c", handle);
+                printf("Palavra: %s retirada!\n", handle);
+                root=pop(root, handle);
+                PAUSE;
+                break;
             case 'h':
                 clearScreen ();
                 printf ("Arvore de altura %d em memoria:\n<pt> | <en>\n\n", treeHeight(root));
@@ -80,6 +89,7 @@ int main (void)
                 PAUSE;
         }
     }
+    
     return 0;
 }
 
@@ -456,4 +466,36 @@ int countLeaf (Tree* root){
     else
         return countLeaf(root->left)+countLeaf(root->right);
 
+}
+
+Tree* pop (Tree* root, char s[]){
+    if(root){
+        if(strcmp(s, root->pt)<0) root->left = pop(root->left, s);
+        else if (strcmp(s, root->pt)>0) root->right = pop(root->right, s);
+        else{
+            if(!(root->left)){
+                Tree* aux = root;
+                root=root->right;
+                free(aux);
+            }
+            else if(!(root->right)){
+                Tree* aux = root;
+                root=root->left;
+                free(aux);
+            }
+            else root->right=aux_pop(root, root->right);
+            return root;
+        }
+    }
+}
+
+Tree* aux_pop (Tree* root, Tree* next){
+    if(next->left==NULL){
+        strcpy(next->pt, root->pt);
+        Tree* aux = next;
+        next=next->right;
+        free(aux);
+    }
+    else next->left=aux_pop(root, next->left);
+    return next;
 }
