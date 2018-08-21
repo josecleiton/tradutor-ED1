@@ -324,7 +324,7 @@ void fileTranslate (char** texto)
     fseek(in, 0, SEEK_END);
     long fSize = ftell (in);
     rewind(in);
-    if(!(*texto)) *texto = MALLOC (fSize+100);
+    if(!(*texto)) *texto = (char*) MALLOC (fSize+100);
     fread (*texto, fSize, 1, in);
     fclose(in);
 }
