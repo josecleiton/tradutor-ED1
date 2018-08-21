@@ -23,10 +23,9 @@ int main (void)
     int count;
     OPENFILE (dict, ARQ_DICT, "rt");
     treeFPush (&root);
-    //printf("NOS = %d\nFOLHAS = %d\n", countNode(root), countLeaf(root));
     puts ("\n\t\tTRADUTOR RUDIMENTAR DE PORTUGUES PARA INGLES\n");
     PAUSE;
-    while (1)
+    while (true)
     {
         clearScreen ();
         puts ("MENU:\n a= Traduzir texto do arquivo\n t= Traduzir frase do teclado\n c= Mudar a traducao de uma palavra\n m= Mostre palavras iniciada por determinada letra\n p= Print Tree\n h= Mostra arvore por altura\n e= Sair\n\nopcao = ");
@@ -36,7 +35,7 @@ int main (void)
             case 'a':
                 clearScreen();
                 fileTranslate(&texto);
-                count = mainOutput(&root, &texto);
+                count = mainOutput(&root, texto);
                 PAUSE;
                 break;
             case 't':
@@ -44,7 +43,7 @@ int main (void)
                 if (!texto) texto = (char*) MALLOC (2048);
                 puts ("Digite uma frase: ");
                 scanf ("%[^\n]%*c", texto);
-                count = mainOutput(&root, &texto);
+                count = mainOutput(&root, texto);
                 PAUSE;
                 break;
             case 'm':
@@ -82,6 +81,7 @@ int main (void)
                 break;
             case 'e': 
                 treeOnFile (&root);
+                fclose(dict);
                 free (texto);
                 return 0;
             default: 
@@ -93,18 +93,18 @@ int main (void)
     return 0;
 }
 
-int mainOutput (Tree** root, char** txt)
+int mainOutput (Tree** root, char* txt)
 {
     int count;
     clearScreen();
-    printf ("A ser traduzido:\n\n%s\n\n\n", *txt);
+    printf ("A ser traduzido:\n\n%s\n\n\n", txt);
     count = aux_transl (root, txt);
     if (!count)
     {
         fprintf (stderr, "Insira um texto valido!\n");
         return 0;
     }
-    printf ("A traducao é: \n\n%s\n\n\tNumero de palavras traduzidas: %d!\n\n", *txt, count);
+    printf ("A traducao é: \n\n%s\n\n\tNumero de palavras traduzidas: %d!\n\n", txt, count);
     return count;
 }
 
@@ -156,13 +156,11 @@ Tree* treeSearch (Tree* root, char needle[])
     }
 }
 
-int aux_transl (Tree** root, char** txt)
+int aux_transl (Tree** root, char* texto)
 {
-    char* texto = *txt;
     if(!texto || *texto == '\0' || !strIsTxt(texto)) return 0; // senão houver texto retorne falso
     size_t len = strlen(texto);
     char* en = (char*) MALLOC (len*2+1);
-    *en = '\0';
     char token[TAM];
     int i = 0; //cursor da string em pt
     int j; //cursor do token
@@ -326,9 +324,8 @@ void fileTranslate (char** texto)
     fseek(in, 0, SEEK_END);
     long fSize = ftell (in);
     rewind(in);
-    if(!(*texto)) *texto = MALLOC (fSize+1);
+    if(!(*texto)) *texto = MALLOC (fSize+100);
     fread (*texto, fSize, 1, in);
-    (*texto)[fSize] = '\0';
     fclose(in);
 }
 
@@ -421,6 +418,7 @@ void* MALLOC (size_t tam)
         fprintf (stderr, "Memoria insuficiente.");
         ERRO;
     }
+    memset(ptr, 0, tam);
     return ptr;
 }
 

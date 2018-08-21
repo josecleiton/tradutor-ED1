@@ -43,13 +43,13 @@ typedef struct treeprint
 
 typedef short int SU;
 
-int mainOutput (Tree** root, char** txt);
+int mainOutput (Tree** root, char* txt);
 int treeFPush (Tree** root);
 Tree* treePush (Tree* root, char pt[], char en[]);
 Tree* treeSearch (Tree* root, char needle[]);
 Tree* treeKeyPush (Tree** root, char pt[]);
 void treeOnFile (Tree** root);
-int aux_transl (Tree** root, char** txt);
+int aux_transl (Tree** root, char* texto);
 void transl (Tree** root, char tk[]);
 void treeWrite (Tree* root);
 Tree* treeFree (Tree* root);
